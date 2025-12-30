@@ -18,26 +18,54 @@ export async function exportToPDF(elementId: string, filename: string) {
     if (!element) return;
 
     // 1. Capture High Quality Image (Ultra Sharp)
+    // We use onclone to ensure we capture the element without any CSS transforms
+    // or browser scaling which causes the "squeezed" look.
     const canvas = await html2canvas(element, {
-        scale: 3, // Increased to 3 for ultra-sharp high-resolution text
+        scale: 3, // Ultra-sharp high-resolution
         useCORS: true,
         logging: false,
         backgroundColor: '#ffffff',
         imageTimeout: 0,
         removeContainer: true,
-        windowWidth: element.scrollWidth,
-        windowHeight: element.scrollHeight
+        onclone: (clonedDoc) => {
+            const clonedElement = clonedDoc.getElementById(elementId);
+            if (clonedElement) {
+                // Reset any transforms or margins that could affect capture scaling
+                clonedElement.style.transform = 'none';
+                clonedElement.style.margin = '0';
+                clonedElement.style.width = '210mm'; // Lock to A4 width
+                clonedElement.parentElement!.style.padding = '0';
+                clonedElement.parentElement!.style.height = 'auto';
+            }
+        }
     });
 
-    const imgData = canvas.toDataURL('image/jpeg', 0.95); // High quality 0.95 for maximum fidelity
+    // 2. Prepare PDF with Multi-page Support
+    const imgData = canvas.toDataURL('image/jpeg', 0.98); // Premium quality
     const pdf = new jsPDF('p', 'mm', 'a4');
+
     const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+    const pdfHeight = pdf.internal.pageSize.getHeight();
 
-    // 2. Add the image
-    pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+    // Calculate total height of the resume in PDF units (mm)
+    const imgHeightInMm = (canvas.height * pdfWidth) / canvas.width;
 
-    // 3. SECRETE SAUCE: Detect links in DOM and map to PDF Annotations
+    let heightLeft = imgHeightInMm;
+    let position = 0;
+
+    // Add first page
+    pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, imgHeightInMm);
+    heightLeft -= pdfHeight;
+
+    // Add subsequent pages if content overflows the A4 height
+    while (heightLeft > 0) {
+        position = heightLeft - imgHeightInMm;
+        pdf.addPage();
+        pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, imgHeightInMm);
+        heightLeft -= pdfHeight;
+    }
+
+    // 3. ADVANCED SAUCE: Map Links across all pages
     const links = element.querySelectorAll('a');
     const rootRect = element.getBoundingClientRect();
 
@@ -46,14 +74,28 @@ export async function exportToPDF(elementId: string, filename: string) {
         const url = link.getAttribute('href');
         if (!url) return;
 
-        // Calculate coordinates relative to the preview container
-        const left = ((rect.left - rootRect.left) / rootRect.width) * pdfWidth;
-        const top = ((rect.top - rootRect.top) / rootRect.height) * pdfHeight;
-        const width = (rect.width / rootRect.width) * pdfWidth;
-        const height = (rect.height / rootRect.height) * pdfHeight;
+        // Normalized positions relative to the source element
+        const relLeft = (rect.left - rootRect.left) / rootRect.width;
+        const relTop = (rect.top - rootRect.top) / rootRect.height;
+        const relWidth = rect.width / rootRect.width;
+        const relHeight = rect.height / rootRect.height;
 
-        // Add invisible link annotation
-        pdf.link(left, top, width, height, { url });
+        // Actual positions in PDF (mm)
+        const left = relLeft * pdfWidth;
+        const totalTopMm = relTop * imgHeightInMm;
+
+        // Determine which page the link falls on
+        const pageIndex = Math.floor(totalTopMm / pdfHeight);
+        const topOnPage = totalTopMm % pdfHeight;
+
+        const width = relWidth * pdfWidth;
+        const height = relHeight * imgHeightInMm;
+
+        // Switch to the correct page to add the annotation
+        if (pageIndex < pdf.getNumberOfPages()) {
+            pdf.setPage(pageIndex + 1);
+            pdf.link(left, topOnPage, width, height, { url });
+        }
     });
 
     pdf.save(`${filename}.pdf`);
