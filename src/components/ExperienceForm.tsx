@@ -1,7 +1,7 @@
 import { Input } from './ui/Input'
 import { Button } from './ui/Button'
-import { Plus, Trash2, Calendar, MapPin, Building2 } from 'lucide-react'
-import type { Experience } from '../types/resume'
+import { Plus, Trash2, Calendar, MapPin, Building2, Link as LinkIcon } from 'lucide-react'
+import type { Experience, ExternalLink } from '../types/resume'
 import { v4 as uuidv4 } from 'uuid'
 
 interface ExperienceFormProps {
@@ -22,6 +22,7 @@ export function ExperienceForm({ data, onChange }: ExperienceFormProps) {
                 endDate: "",
                 current: false,
                 description: "",
+                links: [],
             },
         ]);
     };
@@ -32,6 +33,40 @@ export function ExperienceForm({ data, onChange }: ExperienceFormProps) {
 
     const updateExperience = (id: string, field: keyof Experience, value: any) => {
         onChange(data.map((e) => (e.id === id ? { ...e, [field]: value } : e)));
+    };
+
+    const addLink = (expId: string) => {
+        onChange(data.map((exp) => {
+            if (exp.id === expId) {
+                return {
+                    ...exp,
+                    links: [...(exp.links || []), { label: "", url: "" }]
+                };
+            }
+            return exp;
+        }));
+    };
+
+    const removeLink = (expId: string, index: number) => {
+        onChange(data.map((exp) => {
+            if (exp.id === expId) {
+                const newLinks = [...(exp.links || [])];
+                newLinks.splice(index, 1);
+                return { ...exp, links: newLinks };
+            }
+            return exp;
+        }));
+    };
+
+    const updateLink = (expId: string, index: number, field: keyof ExternalLink, value: string) => {
+        onChange(data.map((exp) => {
+            if (exp.id === expId) {
+                const newLinks = [...(exp.links || [])];
+                newLinks[index] = { ...newLinks[index], [field]: value };
+                return { ...exp, links: newLinks };
+            }
+            return exp;
+        }));
     };
 
     return (
@@ -91,6 +126,40 @@ export function ExperienceForm({ data, onChange }: ExperienceFormProps) {
                             onChange={(e) => updateExperience(exp.id, 'description', e.target.value)}
                             placeholder="Responsibilities and achievements..."
                         />
+                    </div>
+
+                    <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2 text-sm font-medium">
+                                <LinkIcon className="h-4 w-4" />
+                                <span>Experience Links (Portfolio/Project)</span>
+                            </div>
+                            <Button variant="ghost" size="sm" onClick={() => addLink(exp.id)} className="h-8 gap-1">
+                                <Plus className="h-3 w-3" /> Add Link
+                            </Button>
+                        </div>
+
+                        <div className="space-y-2">
+                            {exp.links?.map((link, idx) => (
+                                <div key={idx} className="flex gap-2 items-start">
+                                    <Input
+                                        placeholder="Label (e.g. Portfolio)"
+                                        value={link.label}
+                                        onChange={(e) => updateLink(exp.id, idx, 'label', e.target.value)}
+                                        className="w-1/3"
+                                    />
+                                    <Input
+                                        placeholder="URL (e.g. github.com/project)"
+                                        value={link.url}
+                                        onChange={(e) => updateLink(exp.id, idx, 'url', e.target.value)}
+                                        className="flex-1"
+                                    />
+                                    <Button variant="ghost" size="icon" onClick={() => removeLink(exp.id, idx)} className="text-destructive h-10 w-10 shrink-0">
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </div>
             ))}

@@ -18,9 +18,8 @@ export async function exportToPDF(elementId: string, filename: string) {
     if (!element) return;
 
     // 1. Capture High Quality Image
-    // We use onclone to ensure we capture the element without any CSS transforms
     const canvas = await html2canvas(element, {
-        scale: 2, // Balanced for 1.5MB - 2MB crystal clear quality
+        scale: 2,
         useCORS: true,
         logging: false,
         backgroundColor: '#ffffff',
@@ -32,6 +31,18 @@ export async function exportToPDF(elementId: string, filename: string) {
                 clonedElement.style.transform = 'none';
                 clonedElement.style.margin = '0';
                 clonedElement.style.width = '210mm';
+                // CRITICAL: Fix for word-merging "block of text" bug
+                clonedElement.style.letterSpacing = 'normal';
+                clonedElement.style.wordSpacing = 'normal';
+
+                const allText = clonedElement.querySelectorAll('p, span, div, h1, h2, h3');
+                allText.forEach(el => {
+                    const style = (el as HTMLElement).style;
+                    style.letterSpacing = 'normal';
+                    style.wordSpacing = 'normal';
+                    style.textAlign = 'left'; // Avoid justify which breaks spacing in canvas
+                });
+
                 clonedElement.parentElement!.style.padding = '0';
                 clonedElement.parentElement!.style.height = 'auto';
                 clonedElement.parentElement!.style.overflow = 'visible';
@@ -40,31 +51,26 @@ export async function exportToPDF(elementId: string, filename: string) {
     });
 
     // 2. Prepare Single Page PDF with "Fit to Page" logic
-    const imgData = canvas.toDataURL('image/jpeg', 0.9); // High quality, optimized size
+    const imgData = canvas.toDataURL('image/jpeg', 0.9);
     const pdf = new jsPDF('p', 'mm', 'a4');
 
     const pdfWidth = pdf.internal.pageSize.getWidth();
     const pdfHeight = pdf.internal.pageSize.getHeight();
 
-    // Calculate image height in PDF units (mm)
     let imgHeightInMm = (canvas.height * pdfWidth) / canvas.width;
     let finalWidth = pdfWidth;
     let finalHeight = imgHeightInMm;
 
-    // If the image is taller than the PDF page, scale it down to fit perfectly on ONE page
     if (imgHeightInMm > pdfHeight) {
         const ratio = pdfHeight / imgHeightInMm;
         finalHeight = pdfHeight;
-        finalWidth = pdfWidth * ratio; // Maintain aspect ratio
+        finalWidth = pdfWidth * ratio;
     }
 
-    // Center the content horizontally on the page
     const xOffset = (pdfWidth - finalWidth) / 2;
-
-    // Add exactly one page
     pdf.addImage(imgData, 'JPEG', xOffset, 0, finalWidth, finalHeight);
 
-    // 3. Map Links for Single Page
+    // 3. Map All Links (Header + Experience)
     const links = element.querySelectorAll('a');
     const rootRect = element.getBoundingClientRect();
 
@@ -73,13 +79,11 @@ export async function exportToPDF(elementId: string, filename: string) {
         const url = link.getAttribute('href');
         if (!url) return;
 
-        // Normalized positions relative to the source element
         const relLeft = (rect.left - rootRect.left) / rootRect.width;
         const relTop = (rect.top - rootRect.top) / rootRect.height;
         const relWidth = rect.width / rootRect.width;
         const relHeight = rect.height / rootRect.height;
 
-        // Map to final PDF coordinates considering the scaling and centering
         const left = xOffset + (relLeft * finalWidth);
         const top = relTop * finalHeight;
         const width = relWidth * finalWidth;
@@ -96,7 +100,7 @@ export async function exportToDOCX(data: ResumeData, filename: string) {
         sections: [{
             properties: {
                 page: {
-                    margin: { top: 720, bottom: 720, left: 720, right: 720 }, // 0.5 inch margins
+                    margin: { top: 720, bottom: 720, left: 720, right: 720 },
                 }
             },
             children: [
@@ -127,7 +131,7 @@ export async function exportToDOCX(data: ResumeData, filename: string) {
                         }),
                     ],
                 }),
-                // Links
+                // Personal Links
                 new Paragraph({
                     alignment: AlignmentType.CENTER,
                     children: data.personalDetails.links.flatMap((link, i) => [
@@ -185,7 +189,28 @@ export async function exportToDOCX(data: ResumeData, filename: string) {
                     new Paragraph({
                         children: [new TextRun({ text: exp.description, size: 20, font: "Calibri" })],
                         spacing: { before: 80 },
-                    })
+                    }),
+                    // Experience Links
+                    ...(exp.links && exp.links.length > 0 ? [
+                        new Paragraph({
+                            spacing: { before: 40 },
+                            children: exp.links.flatMap((link, i) => [
+                                new ExternalHyperlink({
+                                    children: [
+                                        new TextRun({
+                                            text: link.label || 'View Project',
+                                            size: 16,
+                                            color: "0000FF",
+                                            underline: {},
+                                            font: "Calibri",
+                                        }),
+                                    ],
+                                    link: link.url.startsWith('http') ? link.url : `https://${link.url}`,
+                                }),
+                                ...(i < exp.links!.length - 1 ? [new TextRun({ text: " • ", size: 16, font: "Calibri" })] : []),
+                            ])
+                        })
+                    ] : [])
                 ]),
 
                 // Education

@@ -21,6 +21,7 @@ export interface Experience {
     endDate: string;
     current: boolean;
     description: string;
+    links?: ExternalLink[];
 }
 
 export interface Education {

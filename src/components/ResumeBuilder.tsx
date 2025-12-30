@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Button } from './ui/Button'
-import { Eye, ArrowLeft, LayoutGrid, Sparkles, Settings } from 'lucide-react'
+import { Eye, ArrowLeft, LayoutGrid, Sparkles, Settings, Link as LinkIcon } from 'lucide-react'
 import type { ResumeData } from '../types/resume'
 import { INITIAL_RESUME_DATA } from '../types/resume'
 import { ManualForm } from './ManualForm'
@@ -127,7 +127,7 @@ export function ResumeBuilder({ onBack }: { onBack: () => void }) {
                     showPreview ? "block flex flex-col" : "hidden md:flex md:flex-col"
                 )}>
                     <div className="resume-preview-wrapper p-4 md:p-8 bg-muted/20">
-                        <div id="resume-preview" className="w-[210mm] min-h-[297mm] bg-white text-black shadow-2xl p-[0.7in] flex flex-col gap-5 font-sans-premium mx-auto break-words overflow-hidden [hyphens:auto]">
+                        <div id="resume-preview" className="w-[210mm] min-h-[297mm] bg-white text-black shadow-2xl p-[0.7in] flex flex-col gap-6 font-sans-premium mx-auto break-words overflow-hidden">
                             {/* Header: Compact Executive Style */}
                             <div className="text-center flex flex-col gap-2 items-center border-b pb-4">
                                 <h1 className="font-bold text-[20pt] tracking-tight uppercase font-sans-premium leading-none mb-1">
@@ -162,7 +162,7 @@ export function ResumeBuilder({ onBack }: { onBack: () => void }) {
                             {data.summary && (
                                 <div className="flex flex-col gap-2">
                                     <div className="font-bold border-b border-gray-800 pb-1 text-[10pt] uppercase tracking-wider font-sans-premium">Professional Summary</div>
-                                    <p className="text-[9pt] leading-[1.5] text-gray-800 text-justify font-sans-premium">
+                                    <p className="text-[9pt] leading-normal text-gray-800 font-sans-premium">
                                         {data.summary}
                                     </p>
                                 </div>
@@ -170,9 +170,9 @@ export function ResumeBuilder({ onBack }: { onBack: () => void }) {
 
                             {/* Experience Section */}
                             {data.experience.length > 0 && (
-                                <div className="flex flex-col gap-3">
+                                <div className="flex flex-col gap-4">
                                     <div className="font-bold border-b border-gray-800 pb-1 text-[10pt] uppercase tracking-wider font-sans-premium">Professional Experience</div>
-                                    <div className="flex flex-col gap-4">
+                                    <div className="flex flex-col gap-5">
                                         {data.experience.map((exp) => (
                                             <div key={exp.id} className="flex flex-col gap-1.5">
                                                 <div className="flex justify-between items-end">
@@ -183,8 +183,19 @@ export function ResumeBuilder({ onBack }: { onBack: () => void }) {
                                                     <span className="text-[9.5pt] font-medium italic text-gray-700">{exp.position}</span>
                                                     <span className="text-[8.5pt] text-gray-500">{exp.location}</span>
                                                 </div>
-                                                <div className="text-[9pt] leading-[1.4] text-gray-800 whitespace-pre-line mt-0.5 pl-1 border-l border-gray-100">
+                                                <div className="text-[9pt] leading-normal text-gray-800 whitespace-pre-line mt-0.5 pl-1.5 border-l border-gray-100">
                                                     {exp.description}
+
+                                                    {exp.links && exp.links.length > 0 && (
+                                                        <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2 text-[8.5pt]">
+                                                            {exp.links.map((link, idx) => (
+                                                                <a key={idx} href={link.url.startsWith('http') ? link.url : `https://${link.url}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 font-medium underline decoration-blue-100 underline-offset-2 flex items-center gap-1 lowercase">
+                                                                    <LinkIcon className="h-3 w-3" />
+                                                                    {link.label || 'View Project'}
+                                                                </a>
+                                                            ))}
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
                                         ))}
@@ -194,9 +205,9 @@ export function ResumeBuilder({ onBack }: { onBack: () => void }) {
 
                             {/* Education Section */}
                             {data.education.length > 0 && (
-                                <div className="flex flex-col gap-3">
+                                <div className="flex flex-col gap-4">
                                     <div className="font-bold border-b border-gray-800 pb-1 text-[10pt] uppercase tracking-wider font-sans-premium">Education</div>
-                                    <div className="flex flex-col gap-3">
+                                    <div className="flex flex-col gap-4">
                                         {data.education.map((edu) => (
                                             <div key={edu.id} className="flex flex-col gap-0.5">
                                                 <div className="flex justify-between items-end">
@@ -215,12 +226,11 @@ export function ResumeBuilder({ onBack }: { onBack: () => void }) {
 
                             {/* Skills Section */}
                             {data.skills.length > 0 && (
-                                <div className="flex flex-col gap-2">
+                                <div className="flex flex-col gap-2.5">
                                     <div className="font-bold border-b border-gray-800 pb-1 text-[10pt] uppercase tracking-wider font-sans-premium">Technical Skills</div>
-                                    <div className="text-[9pt] leading-[1.4] text-gray-800 flex flex-wrap gap-x-3 gap-y-0.5">
+                                    <div className="text-[9pt] leading-normal text-gray-800 flex flex-wrap gap-x-3 gap-y-1">
                                         {data.skills.map((skill, i) => (
-                                            <span key={i} className="flex items-center gap-1.5">
-                                                {i > 0 && <span className="w-1 h-1 bg-gray-300 rounded-full"></span>}
+                                            <span key={i} className="flex items-center gap-1.5 px-2 py-0.5 bg-gray-50 rounded border border-gray-100">
                                                 {skill}
                                             </span>
                                         ))}
