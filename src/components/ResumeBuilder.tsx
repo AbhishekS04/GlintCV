@@ -104,10 +104,10 @@ export function ResumeBuilder({ onBack }: { onBack: () => void }) {
 
             <div className="flex-1 flex overflow-hidden">
                 <div className={cn(
-                    "flex-1 overflow-y-auto p-6 transition-all duration-300",
+                    "flex-1 overflow-y-auto px-4 py-6 md:p-6 transition-all duration-300",
                     showPreview ? "hidden md:block" : "block"
                 )}>
-                    <div className="max-w-3xl mx-auto flex flex-col gap-8">
+                    <div className="max-w-3xl mx-auto flex flex-col gap-6 md:gap-8">
                         <ATSScoreDisplay result={atsResult} />
 
                         {mode === 'manual' ? (
@@ -123,87 +123,109 @@ export function ResumeBuilder({ onBack }: { onBack: () => void }) {
                 </div>
 
                 <div className={cn(
-                    "w-full md:w-[45%] lg:w-[45%] border-l bg-muted/30 overflow-y-auto p-4 md:p-8 flex justify-center transition-all duration-300",
-                    showPreview ? "block" : "hidden md:flex"
+                    "w-full md:w-[45%] lg:w-[45%] border-l bg-muted/30 overflow-hidden transition-all duration-300",
+                    showPreview ? "block flex flex-col" : "hidden md:flex md:flex-col"
                 )}>
-                    <div id="resume-preview" className="w-full max-w-[210mm] min-h-[297mm] bg-white text-black shadow-2xl p-[0.75in] flex flex-col gap-6 font-serif">
-                        <div className="text-center flex flex-col gap-1">
-                            <h1 className="font-bold text-3xl tracking-tight uppercase">
-                                {data.personalDetails.firstName || "FIRST"} {data.personalDetails.lastName || "LAST"}
-                            </h1>
-                            <div className="text-[10pt] text-gray-700 flex flex-wrap justify-center gap-3">
-                                {data.personalDetails.email && <span>{data.personalDetails.email}</span>}
-                                {data.personalDetails.phone && <span>• {data.personalDetails.phone}</span>}
-                                {data.personalDetails.location && <span>• {data.personalDetails.location}</span>}
-                            </div>
-                            <div className="text-[9pt] text-primary/80 flex flex-wrap justify-center gap-3 mt-0.5">
-                                {data.personalDetails.linkedin && <span>LinkedIn</span>}
-                                {data.personalDetails.portfolio && <span>Portfolio</span>}
-                                {data.personalDetails.github && <span>GitHub</span>}
-                            </div>
-                        </div>
-
-                        {data.summary && (
-                            <div className="flex flex-col gap-1.5">
-                                <div className="font-bold border-b-2 border-black pb-0.5 text-[11pt] uppercase tracking-wide">Professional Summary</div>
-                                <p className="text-[10pt] leading-snug text-gray-900 text-justify whitespace-pre-line">
-                                    {data.summary}
-                                </p>
-                            </div>
-                        )}
-
-                        {data.experience.length > 0 && (
-                            <div className="flex flex-col gap-3">
-                                <div className="font-bold border-b-2 border-black pb-0.5 text-[11pt] uppercase tracking-wide">Experience</div>
-                                <div className="flex flex-col gap-4">
-                                    {data.experience.map((exp) => (
-                                        <div key={exp.id} className="flex flex-col gap-1">
-                                            <div className="flex justify-between items-baseline">
-                                                <span className="font-bold text-[10.5pt]">{exp.company}</span>
-                                                <span className="text-[9.5pt] italic">{exp.startDate} – {exp.current ? 'Present' : exp.endDate}</span>
-                                            </div>
-                                            <div className="flex justify-between items-baseline text-[10pt]">
-                                                <span className="italic">{exp.position}</span>
-                                                <span className="text-[9.5pt]">{exp.location}</span>
-                                            </div>
-                                            <p className="text-[9.5pt] leading-tight text-gray-800 whitespace-pre-line mt-1">
-                                                {exp.description}
-                                            </p>
-                                        </div>
-                                    ))}
+                    <div className="resume-preview-wrapper p-4 md:p-8">
+                        <div id="resume-preview" className="w-[210mm] min-h-[297mm] bg-white text-black shadow-2xl p-[0.75in] flex flex-col gap-6 font-serif mx-auto">
+                            <div className="text-center flex flex-col gap-1 items-center">
+                                <h1 className="font-bold text-3xl tracking-tight uppercase">
+                                    {data.personalDetails.firstName || "FIRST"} {data.personalDetails.lastName || "LAST"}
+                                </h1>
+                                <div className="text-[10pt] text-gray-700 flex flex-wrap justify-center gap-x-3 gap-y-1 max-w-[90%] mx-auto">
+                                    {data.personalDetails.email && <span>{data.personalDetails.email}</span>}
+                                    {data.personalDetails.phone && (
+                                        <span className="flex items-center">
+                                            <span className="hidden sm:inline mr-2">•</span>
+                                            {data.personalDetails.phone}
+                                        </span>
+                                    )}
+                                    {data.personalDetails.location && (
+                                        <span className="flex items-center">
+                                            <span className="hidden sm:inline mr-2">•</span>
+                                            {data.personalDetails.location}
+                                        </span>
+                                    )}
                                 </div>
+                                {data.personalDetails.links.length > 0 && (
+                                    <div className="text-[9.5pt] text-primary/80 flex flex-wrap justify-center gap-x-4 gap-y-1 mt-1 max-w-[90%] mx-auto font-medium">
+                                        {data.personalDetails.links.map((link, i) => (
+                                            <div key={i} className="flex items-center hover:underline decoration-primary/30">
+                                                {link.url ? (
+                                                    <a href={link.url.startsWith('http') ? link.url : `https://${link.url}`} target="_blank" rel="noopener noreferrer">
+                                                        {link.label || 'Link'}
+                                                    </a>
+                                                ) : (
+                                                    <span>{link.label}</span>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
-                        )}
 
-                        {data.education.length > 0 && (
-                            <div className="flex flex-col gap-2">
-                                <div className="font-bold border-b-2 border-black pb-0.5 text-[11pt] uppercase tracking-wide">Education</div>
+                            {data.summary && (
+                                <div className="flex flex-col gap-1.5">
+                                    <div className="font-bold border-b-2 border-black pb-0.5 text-[11pt] uppercase tracking-wide">Professional Summary</div>
+                                    <p className="text-[10pt] leading-snug text-gray-900 text-justify whitespace-pre-line">
+                                        {data.summary}
+                                    </p>
+                                </div>
+                            )}
+
+                            {data.experience.length > 0 && (
                                 <div className="flex flex-col gap-3">
-                                    {data.education.map((edu) => (
-                                        <div key={edu.id} className="flex flex-col">
-                                            <div className="flex justify-between items-baseline">
-                                                <span className="font-bold text-[10.5pt]">{edu.school}</span>
-                                                <span className="text-[9.5pt]">{edu.graduationDate}</span>
+                                    <div className="font-bold border-b-2 border-black pb-0.5 text-[11pt] uppercase tracking-wide">Experience</div>
+                                    <div className="flex flex-col gap-4">
+                                        {data.experience.map((exp) => (
+                                            <div key={exp.id} className="flex flex-col gap-1">
+                                                <div className="flex justify-between items-baseline">
+                                                    <span className="font-bold text-[10.5pt]">{exp.company}</span>
+                                                    <span className="text-[9.5pt] italic">{exp.startDate} – {exp.current ? 'Present' : exp.endDate}</span>
+                                                </div>
+                                                <div className="flex justify-between items-baseline text-[10pt]">
+                                                    <span className="italic">{exp.position}</span>
+                                                    <span className="text-[9.5pt]">{exp.location}</span>
+                                                </div>
+                                                <p className="text-[9.5pt] leading-tight text-gray-800 whitespace-pre-line mt-1">
+                                                    {exp.description}
+                                                </p>
                                             </div>
-                                            <div className="flex justify-between items-baseline text-[10pt]">
-                                                <span>{edu.degree} in {edu.field}</span>
-                                                <span className="text-[9.5pt] italic">{edu.location}</span>
-                                            </div>
-                                        </div>
-                                    ))}
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
-                        )}
+                            )}
 
-                        {data.skills.length > 0 && (
-                            <div className="flex flex-col gap-1.5">
-                                <div className="font-bold border-b-2 border-black pb-0.5 text-[11pt] uppercase tracking-wide">Skills</div>
-                                <p className="text-[10pt] leading-snug text-gray-900">
-                                    <span className="font-semibold">Technical Skills: </span>
-                                    {data.skills.join(", ")}
-                                </p>
-                            </div>
-                        )}
+                            {data.education.length > 0 && (
+                                <div className="flex flex-col gap-2">
+                                    <div className="font-bold border-b-2 border-black pb-0.5 text-[11pt] uppercase tracking-wide">Education</div>
+                                    <div className="flex flex-col gap-3">
+                                        {data.education.map((edu) => (
+                                            <div key={edu.id} className="flex flex-col">
+                                                <div className="flex justify-between items-baseline">
+                                                    <span className="font-bold text-[10.5pt]">{edu.school}</span>
+                                                    <span className="text-[9.5pt]">{edu.graduationDate}</span>
+                                                </div>
+                                                <div className="flex justify-between items-baseline text-[10pt]">
+                                                    <span>{edu.degree} in {edu.field}</span>
+                                                    <span className="text-[9.5pt] italic">{edu.location}</span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {data.skills.length > 0 && (
+                                <div className="flex flex-col gap-1.5">
+                                    <div className="font-bold border-b-2 border-black pb-0.5 text-[11pt] uppercase tracking-wide">Skills</div>
+                                    <p className="text-[10pt] leading-snug text-gray-900">
+                                        <span className="font-semibold">Technical Skills: </span>
+                                        {data.skills.join(", ")}
+                                    </p>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>

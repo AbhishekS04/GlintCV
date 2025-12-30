@@ -1,13 +1,15 @@
+export interface ExternalLink {
+    label: string;
+    url: string;
+}
+
 export interface PersonalDetails {
     firstName: string;
     lastName: string;
     email: string;
     phone: string;
     location: string;
-    portfolio?: string;
-    github?: string;
-    linkedin?: string;
-    otherLink?: string;
+    links: ExternalLink[];
 }
 
 export interface Experience {
@@ -56,6 +58,7 @@ export const INITIAL_RESUME_DATA: ResumeData = {
         email: "",
         phone: "",
         location: "",
+        links: [],
     },
     summary: "",
     experience: [],
