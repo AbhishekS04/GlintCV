@@ -127,9 +127,9 @@ export function ResumeBuilder({ onBack }: { onBack: () => void }) {
                     showPreview ? "block flex flex-col" : "hidden md:flex md:flex-col"
                 )}>
                     <div className="resume-preview-wrapper p-4 md:p-8">
-                        <div id="resume-preview" className="w-[210mm] min-h-[297mm] bg-white text-black shadow-2xl p-[0.75in] flex flex-col gap-6 font-serif mx-auto">
-                            <div className="text-center flex flex-col gap-1 items-center">
-                                <h1 className="font-bold text-3xl tracking-tight uppercase">
+                        <div id="resume-preview" className="w-[210mm] min-h-[297mm] bg-white text-black shadow-2xl p-[0.75in] flex flex-col gap-6 font-serif mx-auto break-words overflow-hidden [hyphens:auto]">
+                            <div className="text-center flex flex-col gap-2 items-center mb-2">
+                                <h1 className="font-bold text-3xl tracking-tight uppercase mb-1">
                                     {data.personalDetails.firstName || "FIRST"} {data.personalDetails.lastName || "LAST"}
                                 </h1>
                                 <div className="text-[10pt] text-gray-700 flex flex-wrap justify-center gap-x-3 gap-y-1 max-w-[90%] mx-auto">
@@ -165,9 +165,9 @@ export function ResumeBuilder({ onBack }: { onBack: () => void }) {
                             </div>
 
                             {data.summary && (
-                                <div className="flex flex-col gap-1.5">
-                                    <div className="font-bold border-b-2 border-black pb-0.5 text-[11pt] uppercase tracking-wide">Professional Summary</div>
-                                    <p className="text-[10pt] leading-snug text-gray-900 text-justify whitespace-pre-line">
+                                <div className="flex flex-col gap-2">
+                                    <div className="font-bold border-b-2 border-black pb-1.5 text-[11pt] uppercase tracking-wide">Professional Summary</div>
+                                    <p className="text-[10pt] leading-relaxed text-gray-900 text-justify whitespace-pre-line">
                                         {data.summary}
                                     </p>
                                 </div>
@@ -175,7 +175,7 @@ export function ResumeBuilder({ onBack }: { onBack: () => void }) {
 
                             {data.experience.length > 0 && (
                                 <div className="flex flex-col gap-3">
-                                    <div className="font-bold border-b-2 border-black pb-0.5 text-[11pt] uppercase tracking-wide">Experience</div>
+                                    <div className="font-bold border-b-2 border-black pb-1.5 text-[11pt] uppercase tracking-wide">Experience</div>
                                     <div className="flex flex-col gap-4">
                                         {data.experience.map((exp) => (
                                             <div key={exp.id} className="flex flex-col gap-1">
@@ -198,7 +198,7 @@ export function ResumeBuilder({ onBack }: { onBack: () => void }) {
 
                             {data.education.length > 0 && (
                                 <div className="flex flex-col gap-2">
-                                    <div className="font-bold border-b-2 border-black pb-0.5 text-[11pt] uppercase tracking-wide">Education</div>
+                                    <div className="font-bold border-b-2 border-black pb-1.5 text-[11pt] uppercase tracking-wide">Education</div>
                                     <div className="flex flex-col gap-3">
                                         {data.education.map((edu) => (
                                             <div key={edu.id} className="flex flex-col">
@@ -217,8 +217,8 @@ export function ResumeBuilder({ onBack }: { onBack: () => void }) {
                             )}
 
                             {data.skills.length > 0 && (
-                                <div className="flex flex-col gap-1.5">
-                                    <div className="font-bold border-b-2 border-black pb-0.5 text-[11pt] uppercase tracking-wide">Skills</div>
+                                <div className="flex flex-col gap-2">
+                                    <div className="font-bold border-b-2 border-black pb-1.5 text-[11pt] uppercase tracking-wide">Skills</div>
                                     <p className="text-[10pt] leading-snug text-gray-900">
                                         <span className="font-semibold">Technical Skills: </span>
                                         {data.skills.join(", ")}
