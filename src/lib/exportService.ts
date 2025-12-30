@@ -17,11 +17,10 @@ export async function exportToPDF(elementId: string, filename: string) {
     const element = document.getElementById(elementId);
     if (!element) return;
 
-    // 1. Capture High Quality Image (Ultra Sharp)
+    // 1. Capture High Quality Image
     // We use onclone to ensure we capture the element without any CSS transforms
-    // or browser scaling which causes the "squeezed" look.
     const canvas = await html2canvas(element, {
-        scale: 3, // Ultra-sharp high-resolution
+        scale: 2, // Balanced for 1.5MB - 2MB crystal clear quality
         useCORS: true,
         logging: false,
         backgroundColor: '#ffffff',
@@ -30,42 +29,42 @@ export async function exportToPDF(elementId: string, filename: string) {
         onclone: (clonedDoc) => {
             const clonedElement = clonedDoc.getElementById(elementId);
             if (clonedElement) {
-                // Reset any transforms or margins that could affect capture scaling
                 clonedElement.style.transform = 'none';
                 clonedElement.style.margin = '0';
-                clonedElement.style.width = '210mm'; // Lock to A4 width
+                clonedElement.style.width = '210mm';
                 clonedElement.parentElement!.style.padding = '0';
                 clonedElement.parentElement!.style.height = 'auto';
+                clonedElement.parentElement!.style.overflow = 'visible';
             }
         }
     });
 
-    // 2. Prepare PDF with Multi-page Support
-    const imgData = canvas.toDataURL('image/jpeg', 0.98); // Premium quality
+    // 2. Prepare Single Page PDF with "Fit to Page" logic
+    const imgData = canvas.toDataURL('image/jpeg', 0.9); // High quality, optimized size
     const pdf = new jsPDF('p', 'mm', 'a4');
 
     const pdfWidth = pdf.internal.pageSize.getWidth();
     const pdfHeight = pdf.internal.pageSize.getHeight();
 
-    // Calculate total height of the resume in PDF units (mm)
-    const imgHeightInMm = (canvas.height * pdfWidth) / canvas.width;
+    // Calculate image height in PDF units (mm)
+    let imgHeightInMm = (canvas.height * pdfWidth) / canvas.width;
+    let finalWidth = pdfWidth;
+    let finalHeight = imgHeightInMm;
 
-    let heightLeft = imgHeightInMm;
-    let position = 0;
-
-    // Add first page
-    pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, imgHeightInMm);
-    heightLeft -= pdfHeight;
-
-    // Add subsequent pages if content overflows the A4 height
-    while (heightLeft > 0) {
-        position = heightLeft - imgHeightInMm;
-        pdf.addPage();
-        pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, imgHeightInMm);
-        heightLeft -= pdfHeight;
+    // If the image is taller than the PDF page, scale it down to fit perfectly on ONE page
+    if (imgHeightInMm > pdfHeight) {
+        const ratio = pdfHeight / imgHeightInMm;
+        finalHeight = pdfHeight;
+        finalWidth = pdfWidth * ratio; // Maintain aspect ratio
     }
 
-    // 3. ADVANCED SAUCE: Map Links across all pages
+    // Center the content horizontally on the page
+    const xOffset = (pdfWidth - finalWidth) / 2;
+
+    // Add exactly one page
+    pdf.addImage(imgData, 'JPEG', xOffset, 0, finalWidth, finalHeight);
+
+    // 3. Map Links for Single Page
     const links = element.querySelectorAll('a');
     const rootRect = element.getBoundingClientRect();
 
@@ -80,22 +79,13 @@ export async function exportToPDF(elementId: string, filename: string) {
         const relWidth = rect.width / rootRect.width;
         const relHeight = rect.height / rootRect.height;
 
-        // Actual positions in PDF (mm)
-        const left = relLeft * pdfWidth;
-        const totalTopMm = relTop * imgHeightInMm;
+        // Map to final PDF coordinates considering the scaling and centering
+        const left = xOffset + (relLeft * finalWidth);
+        const top = relTop * finalHeight;
+        const width = relWidth * finalWidth;
+        const height = relHeight * finalHeight;
 
-        // Determine which page the link falls on
-        const pageIndex = Math.floor(totalTopMm / pdfHeight);
-        const topOnPage = totalTopMm % pdfHeight;
-
-        const width = relWidth * pdfWidth;
-        const height = relHeight * imgHeightInMm;
-
-        // Switch to the correct page to add the annotation
-        if (pageIndex < pdf.getNumberOfPages()) {
-            pdf.setPage(pageIndex + 1);
-            pdf.link(left, topOnPage, width, height, { url });
-        }
+        pdf.link(left, top, width, height, { url });
     });
 
     pdf.save(`${filename}.pdf`);
