@@ -17,15 +17,17 @@ export async function exportToPDF(elementId: string, filename: string) {
     const element = document.getElementById(elementId);
     if (!element) return;
 
-    // 1. Capture High Quality Image but use JPEG for compression
+    // 1. Capture Image with optimized settings for small file size
     const canvas = await html2canvas(element, {
-        scale: 2, // Keep 2 for sharpness, compression will handle size
+        scale: 1.5, // Reduced from 2 to 1.5 for significant size reduction
         useCORS: true,
         logging: false,
-        backgroundColor: '#ffffff'
+        backgroundColor: '#ffffff',
+        imageTimeout: 0,
+        removeContainer: true
     });
 
-    const imgData = canvas.toDataURL('image/jpeg', 0.85); // Critical: USE JPEG + 0.85 QUALITY
+    const imgData = canvas.toDataURL('image/jpeg', 0.7); // Reduced from 0.85 to 0.7 for <2MB targets
     const pdf = new jsPDF('p', 'mm', 'a4');
     const pdfWidth = pdf.internal.pageSize.getWidth();
     const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
