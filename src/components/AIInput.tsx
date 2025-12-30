@@ -20,15 +20,15 @@ export function AIInput({ onProcess, isLoading }: AIInputProps) {
                         Raw Resume Content
                     </h3>
                     <p className="text-sm text-muted-foreground mb-4">
-                        Paste your messy notes, bullet points, or old resume text.
-                        Our AI will structure and optimize it for ATS standards.
+                        Paste your messy notes, bullet points, **raw code (React/Python/etc.)**, or ChatGPT outputs.
+                        Our AI will architect a professional ATS-safe resume from your data.
                     </p>
 
                     <textarea
-                        className="flex min-h-[300px] w-full rounded-xl border-2 border-primary/10 bg-background px-4 py-4 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 disabled:cursor-not-allowed disabled:opacity-50 transition-all"
+                        className="flex min-h-[300px] w-full rounded-xl border-2 border-primary/10 bg-background px-4 py-4 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 disabled:cursor-not-allowed disabled:opacity-50 transition-all font-mono"
                         value={text}
                         onChange={(e) => setText(e.target.value)}
-                        placeholder="Example: I worked at Google as a Senior engineer from 2020 to 2023. I led a team of 10 and reduced costs by 20%..."
+                        placeholder="Example: Paste a React component you built, a SQL schema, or a ChatGPT character description. The AI will extract the achievements and skills automatically!"
                         disabled={isLoading}
                     />
 

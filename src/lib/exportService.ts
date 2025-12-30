@@ -7,7 +7,8 @@ import {
     TextRun,
     HeadingLevel,
     AlignmentType,
-    BorderStyle
+    BorderStyle,
+    ExternalHyperlink
 } from 'docx';
 import { saveAs } from 'file-saver';
 import type { ResumeData } from '../types/resume';
@@ -16,18 +17,41 @@ export async function exportToPDF(elementId: string, filename: string) {
     const element = document.getElementById(elementId);
     if (!element) return;
 
+    // 1. Capture High Quality Image but use JPEG for compression
     const canvas = await html2canvas(element, {
-        scale: 2,
+        scale: 2, // Keep 2 for sharpness, compression will handle size
         useCORS: true,
-        logging: false
+        logging: false,
+        backgroundColor: '#ffffff'
     });
 
-    const imgData = canvas.toDataURL('image/png');
+    const imgData = canvas.toDataURL('image/jpeg', 0.85); // Critical: USE JPEG + 0.85 QUALITY
     const pdf = new jsPDF('p', 'mm', 'a4');
     const pdfWidth = pdf.internal.pageSize.getWidth();
     const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
 
-    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+    // 2. Add the image
+    pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+
+    // 3. SECRETE SAUCE: Detect links in DOM and map to PDF Annotations
+    const links = element.querySelectorAll('a');
+    const rootRect = element.getBoundingClientRect();
+
+    links.forEach(link => {
+        const rect = link.getBoundingClientRect();
+        const url = link.getAttribute('href');
+        if (!url) return;
+
+        // Calculate coordinates relative to the preview container
+        const left = ((rect.left - rootRect.left) / rootRect.width) * pdfWidth;
+        const top = ((rect.top - rootRect.top) / rootRect.height) * pdfHeight;
+        const width = (rect.width / rootRect.width) * pdfWidth;
+        const height = (rect.height / rootRect.height) * pdfHeight;
+
+        // Add invisible link annotation
+        pdf.link(left, top, width, height, { url });
+    });
+
     pdf.save(`${filename}.pdf`);
 }
 
@@ -70,14 +94,21 @@ export async function exportToDOCX(data: ResumeData, filename: string) {
                 // Links
                 new Paragraph({
                     alignment: AlignmentType.CENTER,
-                    children: [
-                        new TextRun({
-                            text: data.personalDetails.links.map(l => l.label).filter(Boolean).join(" | "),
-                            size: 18,
-                            color: "444444",
-                            font: "Calibri",
+                    children: data.personalDetails.links.flatMap((link, i) => [
+                        new ExternalHyperlink({
+                            children: [
+                                new TextRun({
+                                    text: link.label || link.url || 'Link',
+                                    size: 18,
+                                    color: "0000FF",
+                                    underline: {},
+                                    font: "Calibri",
+                                }),
+                            ],
+                            link: link.url.startsWith('http') ? link.url : `https://${link.url}`,
                         }),
-                    ],
+                        ...(i < data.personalDetails.links.length - 1 ? [new TextRun({ text: " | ", size: 18, font: "Calibri" })] : []),
+                    ]),
                 }),
 
                 // Summary
