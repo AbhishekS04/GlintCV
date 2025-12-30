@@ -126,33 +126,27 @@ export function ResumeBuilder({ onBack }: { onBack: () => void }) {
                     "w-full md:w-[45%] lg:w-[45%] border-l bg-muted/30 overflow-hidden transition-all duration-300",
                     showPreview ? "block flex flex-col" : "hidden md:flex md:flex-col"
                 )}>
-                    <div className="resume-preview-wrapper p-4 md:p-8">
-                        <div id="resume-preview" className="w-[210mm] min-h-[297mm] bg-white text-black shadow-2xl p-[0.75in] flex flex-col gap-6 font-serif mx-auto break-words overflow-hidden [hyphens:auto]">
-                            <div className="text-center flex flex-col gap-2 items-center mb-2">
-                                <h1 className="font-bold text-3xl tracking-tight uppercase mb-1">
+                    <div className="resume-preview-wrapper p-4 md:p-8 bg-muted/20">
+                        <div id="resume-preview" className="w-[210mm] min-h-[297mm] bg-white text-black shadow-2xl p-[1in] flex flex-col gap-8 font-sans-premium mx-auto break-words overflow-hidden [hyphens:auto]">
+                            {/* Header: Compact Executive Style */}
+                            <div className="text-center flex flex-col gap-2 items-center border-b pb-6">
+                                <h1 className="font-bold text-[22pt] tracking-tight uppercase font-serif-premium leading-none mb-1">
                                     {data.personalDetails.firstName || "FIRST"} {data.personalDetails.lastName || "LAST"}
                                 </h1>
-                                <div className="text-[10pt] text-gray-700 flex flex-wrap justify-center gap-x-3 gap-y-1 max-w-[90%] mx-auto">
-                                    {data.personalDetails.email && <span>{data.personalDetails.email}</span>}
-                                    {data.personalDetails.phone && (
-                                        <span className="flex items-center">
-                                            <span className="hidden sm:inline mr-2">•</span>
-                                            {data.personalDetails.phone}
-                                        </span>
-                                    )}
-                                    {data.personalDetails.location && (
-                                        <span className="flex items-center">
-                                            <span className="hidden sm:inline mr-2">•</span>
-                                            {data.personalDetails.location}
-                                        </span>
-                                    )}
+                                <div className="text-[9.5pt] text-gray-600 flex flex-wrap justify-center gap-x-2 gap-y-1 max-w-[95%] mx-auto">
+                                    {data.personalDetails.location && <span>{data.personalDetails.location}</span>}
+                                    {(data.personalDetails.location && (data.personalDetails.phone || data.personalDetails.email)) && <span className="text-gray-300">|</span>}
+                                    {data.personalDetails.phone && <span>{data.personalDetails.phone}</span>}
+                                    {(data.personalDetails.phone && data.personalDetails.email) && <span className="text-gray-300">|</span>}
+                                    {data.personalDetails.email && <span className="font-semibold text-black">{data.personalDetails.email}</span>}
                                 </div>
                                 {data.personalDetails.links.length > 0 && (
-                                    <div className="text-[9.5pt] text-primary/80 flex flex-wrap justify-center gap-x-4 gap-y-1 mt-1 max-w-[90%] mx-auto font-medium">
+                                    <div className="text-[9pt] text-gray-500 flex flex-wrap justify-center gap-x-3 gap-y-1 mt-1 max-w-[95%] mx-auto lowercase">
                                         {data.personalDetails.links.map((link, i) => (
-                                            <div key={i} className="flex items-center hover:underline decoration-primary/30">
+                                            <div key={i} className="flex items-center gap-3">
+                                                {i > 0 && <span className="text-gray-300">•</span>}
                                                 {link.url ? (
-                                                    <a href={link.url.startsWith('http') ? link.url : `https://${link.url}`} target="_blank" rel="noopener noreferrer">
+                                                    <a href={link.url.startsWith('http') ? link.url : `https://${link.url}`} target="_blank" rel="noopener noreferrer" className="hover:text-black transition-colors underline decoration-gray-200 underline-offset-2">
                                                         {link.label || 'Link'}
                                                     </a>
                                                 ) : (
@@ -164,51 +158,54 @@ export function ResumeBuilder({ onBack }: { onBack: () => void }) {
                                 )}
                             </div>
 
+                            {/* Summary Section */}
                             {data.summary && (
-                                <div className="flex flex-col gap-2">
-                                    <div className="font-bold border-b-2 border-black pb-1.5 text-[11pt] uppercase tracking-wide">Professional Summary</div>
-                                    <p className="text-[10pt] leading-relaxed text-gray-900 text-justify whitespace-pre-line">
+                                <div className="flex flex-col gap-2.5">
+                                    <div className="font-bold border-b border-gray-800 pb-1.5 text-[10.5pt] uppercase tracking-widest font-serif-premium">Professional Summary</div>
+                                    <p className="text-[9.5pt] leading-[1.6] text-gray-800 text-justify font-sans-premium">
                                         {data.summary}
                                     </p>
                                 </div>
                             )}
 
+                            {/* Experience Section */}
                             {data.experience.length > 0 && (
-                                <div className="flex flex-col gap-3">
-                                    <div className="font-bold border-b-2 border-black pb-1.5 text-[11pt] uppercase tracking-wide">Experience</div>
-                                    <div className="flex flex-col gap-4">
+                                <div className="flex flex-col gap-4">
+                                    <div className="font-bold border-b border-gray-800 pb-1.5 text-[10.5pt] uppercase tracking-widest font-serif-premium">Professional Experience</div>
+                                    <div className="flex flex-col gap-6">
                                         {data.experience.map((exp) => (
-                                            <div key={exp.id} className="flex flex-col gap-1">
-                                                <div className="flex justify-between items-baseline">
-                                                    <span className="font-bold text-[10.5pt]">{exp.company}</span>
-                                                    <span className="text-[9.5pt] italic">{exp.startDate} – {exp.current ? 'Present' : exp.endDate}</span>
+                                            <div key={exp.id} className="flex flex-col gap-2">
+                                                <div className="flex justify-between items-end">
+                                                    <span className="font-bold text-[11pt] text-black uppercase tracking-tight">{exp.company}</span>
+                                                    <span className="text-[9pt] font-semibold text-gray-600 tabular-nums uppercase">{exp.startDate} – {exp.current ? 'Present' : exp.endDate}</span>
                                                 </div>
-                                                <div className="flex justify-between items-baseline text-[10pt]">
-                                                    <span className="italic">{exp.position}</span>
-                                                    <span className="text-[9.5pt]">{exp.location}</span>
+                                                <div className="flex justify-between items-baseline -mt-1">
+                                                    <span className="text-[10pt] font-medium italic text-gray-700">{exp.position}</span>
+                                                    <span className="text-[9pt] text-gray-500">{exp.location}</span>
                                                 </div>
-                                                <p className="text-[9.5pt] leading-tight text-gray-800 whitespace-pre-line mt-1">
+                                                <div className="text-[9.5pt] leading-[1.5] text-gray-800 whitespace-pre-line mt-1 pl-1 border-l border-gray-100">
                                                     {exp.description}
-                                                </p>
+                                                </div>
                                             </div>
                                         ))}
                                     </div>
                                 </div>
                             )}
 
+                            {/* Education Section */}
                             {data.education.length > 0 && (
-                                <div className="flex flex-col gap-2">
-                                    <div className="font-bold border-b-2 border-black pb-1.5 text-[11pt] uppercase tracking-wide">Education</div>
-                                    <div className="flex flex-col gap-3">
+                                <div className="flex flex-col gap-4">
+                                    <div className="font-bold border-b border-gray-800 pb-1.5 text-[10.5pt] uppercase tracking-widest font-serif-premium">Education</div>
+                                    <div className="flex flex-col gap-5">
                                         {data.education.map((edu) => (
-                                            <div key={edu.id} className="flex flex-col">
-                                                <div className="flex justify-between items-baseline">
-                                                    <span className="font-bold text-[10.5pt]">{edu.school}</span>
-                                                    <span className="text-[9.5pt]">{edu.graduationDate}</span>
+                                            <div key={edu.id} className="flex flex-col gap-1">
+                                                <div className="flex justify-between items-end">
+                                                    <span className="font-bold text-[10.5pt] text-black">{edu.school}</span>
+                                                    <span className="text-[9pt] font-semibold text-gray-600 uppercase tabular-nums">{edu.graduationDate}</span>
                                                 </div>
-                                                <div className="flex justify-between items-baseline text-[10pt]">
-                                                    <span>{edu.degree} in {edu.field}</span>
-                                                    <span className="text-[9.5pt] italic">{edu.location}</span>
+                                                <div className="flex justify-between items-baseline">
+                                                    <span className="text-[9.5pt] text-gray-700">{edu.degree} in {edu.field}</span>
+                                                    <span className="text-[9pt] italic text-gray-500">{edu.location}</span>
                                                 </div>
                                             </div>
                                         ))}
@@ -216,13 +213,18 @@ export function ResumeBuilder({ onBack }: { onBack: () => void }) {
                                 </div>
                             )}
 
+                            {/* Skills Section */}
                             {data.skills.length > 0 && (
-                                <div className="flex flex-col gap-2">
-                                    <div className="font-bold border-b-2 border-black pb-1.5 text-[11pt] uppercase tracking-wide">Skills</div>
-                                    <p className="text-[10pt] leading-snug text-gray-900">
-                                        <span className="font-semibold">Technical Skills: </span>
-                                        {data.skills.join(", ")}
-                                    </p>
+                                <div className="flex flex-col gap-2.5">
+                                    <div className="font-bold border-b border-gray-800 pb-1.5 text-[10.5pt] uppercase tracking-widest font-serif-premium">Technical Skills</div>
+                                    <div className="text-[9.5pt] leading-[1.6] text-gray-800 flex flex-wrap gap-x-4 gap-y-1">
+                                        {data.skills.map((skill, i) => (
+                                            <span key={i} className="flex items-center gap-2">
+                                                <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
+                                                {skill}
+                                            </span>
+                                        ))}
+                                    </div>
                                 </div>
                             )}
                         </div>

@@ -73,6 +73,16 @@
   @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60;
 }
 
+@layer utilities {
+  .font-serif-premium {
+    font-family: 'Merriweather', 'Georgia', serif;
+  }
+
+  .font-sans-premium {
+    font-family: 'Inter', 'System-ui', sans-serif;
+  }
+}
+
 /* Resume Preview Scaling */
 .resume-preview-wrapper {
   perspective: 1000px;
@@ -82,11 +92,15 @@
   justify-content: center;
   align-items: flex-start;
   overflow: auto;
+  padding: 2rem;
 }
 
 #resume-preview {
   transform-origin: top center;
   transition: transform 0.3s ease;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  background-color: white;
+  color: black;
 }
 
 @media (max-width: 768px) {
